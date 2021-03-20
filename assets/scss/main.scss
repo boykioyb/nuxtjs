@@ -1,0 +1,47 @@
+@import 'reset';
+@import 'fonts';
+@import 'variables';
+
+@keyframes slide-in {
+  0% {
+    bottom: -385px;
+  }
+
+  100% {
+    bottom: 0;
+  }
+}
+
+@keyframes filter-slide-in {
+  0% {
+    bottom: -720px;
+  }
+
+  100% {
+    bottom: 0;
+  }
+}
+@keyframes show {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+.vd-picker,
+.vd-wrapper--inline {
+  width: 100% !important;
+  box-shadow: none !important;
+}
+.vd-picker__controls {
+  border-bottom: 1px solid #ebeced;
+}
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s;
+}
+.fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+  opacity: 0;
+}

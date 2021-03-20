@@ -1,4 +1,4 @@
-import { auth, pwa, axios } from './config'
+import { pwa } from './config'
 require('dotenv').config()
 
 export default {
@@ -18,12 +18,15 @@ export default {
   loading: { color: '#000' },
 
   // Global CSS: https://go.nuxtjs.dev/config-css
-  css: [],
+  css: ['~/assets/scss/main'],
+  styleResources: {
+    scss: ['./assets/scss/*.scss'],
+  },
   tailwindcss: {
     jit: true,
   },
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
-  plugins: [],
+  plugins: ['~/plugins/models', '~/plugins/axios'],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
   components: true,
@@ -33,22 +36,53 @@ export default {
     // https://go.nuxtjs.dev/eslint
     '@nuxtjs/eslint-module',
     // https://go.nuxtjs.dev/tailwindcss
-    '@nuxtjs/tailwindcss',
-    'nuxt-vite',
+    '@nuxtjs/dotenv',
   ],
 
   // Modules: https://go.nuxtjs.dev/config-modules
   modules: [
     // https://go.nuxtjs.dev/axios
-    ['@nuxtjs/axios', axios()],
+    ['@nuxtjs/axios'],
     // https://go.nuxtjs.dev/pwa
     ['@nuxtjs/pwa', pwa()],
-    ['@nuxtjs/auth-next', auth()],
+    ['@nuxtjs/auth-next'],
+    '@nuxtjs/style-resources',
   ],
-
-  // Axios module configuration: https://go.nuxtjs.dev/config-axios
-  axios: {},
-
+  auth: {
+    strategies: {
+      local: {
+        token: {
+          property: 'token',
+          required: true,
+          type: 'Bearer',
+        },
+        user: {
+          property: 'user',
+          // autoFetch: true
+        },
+        endpoints: {
+          login: {
+            url: '/partner/login',
+            method: 'post',
+            propertyName: 'data.data.user.accessToken.token',
+          },
+          logout: false,
+          user: false,
+        },
+      },
+    },
+    redirect: {
+      login: '/auth/login',
+      callback: '/',
+      logout: '/auth/login',
+      home: '/',
+    },
+    fullPathRedirect: true,
+    plugins: ['~/plugins/axios.js'],
+  },
+  router: {
+    middleware: ['auth'],
+  },
   // PWA module configuration: https://go.nuxtjs.dev/pwa
   pwa: {
     manifest: {
@@ -57,8 +91,15 @@ export default {
   },
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
-  build: {},
+  build: {
+    filenames: {
+      chunk: ({ isDev }) => (isDev ? '[name].js' : '[chunkhash].js'),
+    },
+  },
   server: {
     host: '0.0.0.0',
+  },
+  publicRuntimeConfig: {
+    baseURL: process.env.API_BASE_URL || 'https://nuxtjs.org',
   },
 }

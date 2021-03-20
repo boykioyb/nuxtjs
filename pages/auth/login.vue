@@ -1,82 +1,40 @@
 <template>
-  <div class="h-screen flex flex-1 justify-center items-center black">
-    <v-container>
-      <v-card :loading="loading" width="500px" class="m-auto">
-        <div class="px-2 py-4">
-          <v-card-text>
-            <img
-              class="w-2/5 mx-auto my-8"
-              src="~assets/images/LogoAzoomVietNam.png"
-              alt=""
-            />
-            <v-form ref="form" v-model="valid" @keyup.native.enter="login">
-              <sv-text-field
-                v-model="model.email"
-                :label="$t('common.email')"
-                validate="required|email"
-                autofocus
-                validate-on-blur
-                placeholder="Please enter e-mail"
-              ></sv-text-field>
-              <sv-text-field
-                v-model="model.password"
-                :label="$t('common.password')"
-                validate="required"
-                type="password"
-                color="primary"
-                placeholder="Please enter password"
-              ></sv-text-field>
-            </v-form>
-          </v-card-text>
-          <v-card-actions class="p-4">
-            <div class="flex flex-wrap">
-              <v-btn
-                :loading="loading"
-                block
-                large
-                dark
-                depressed
-                @click="login"
-              >
-                {{ $t('common.login') }}
-              </v-btn>
-              <v-btn
-                block
-                text
-                large
-                class="mt-4"
-                @click="$auth.loginWith('google')"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 48 48"
-                  width="24px"
-                  height="24px"
-                >
-                  <path
-                    fill="#FFC107"
-                    d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"
-                  />
-                  <path
-                    fill="#FF3D00"
-                    d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"
-                  />
-                  <path
-                    fill="#4CAF50"
-                    d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"
-                  />
-                  <path
-                    fill="#1976D2"
-                    d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"
-                  />
-                </svg>
-                <span class="mx-4">Sign in with Google</span>
-              </v-btn>
-            </div>
-          </v-card-actions>
-        </div>
-      </v-card>
-    </v-container>
+  <div class="login">
+    <h1 class="title">Đăng nhập</h1>
+    <form class="form" @submit.prevent="login">
+      <div class="form-control">
+        <input
+          v-model="model.username"
+          type="text"
+          placeholder=" "
+          autocomplete="off"
+          required
+          class="input"
+          @keyup="removeWrong"
+        />
+        <label for="username" class="label">Tên đăng nhập</label>
+        <span class="icon" @click="removeText('username')">
+          <img :src="closeImage" alt="Đăng nhập" />
+        </span>
+      </div>
+      <div class="form-control">
+        <input
+          v-model="model.password"
+          type="password"
+          placeholder=" "
+          autocomplete="off"
+          required
+          class="input"
+          @keyup="removeWrong"
+        />
+        <label for="password" class="label">Mật khẩu</label>
+        <span class="icon" @click="removeText('password')">
+          <img :src="closeImage" alt="Đăng nhập" />
+        </span>
+      </div>
+      <p v-if="isWrong" class="wrong">{{ wrongText }}</p>
+      <button type="submit" class="btn -submit" :disabled="isSubmit">Xác nhận</button>
+    </form>
   </div>
 </template>
 
@@ -86,27 +44,150 @@ export default {
   layout: 'blank',
   data() {
     return {
-      loading: false,
-      valid: false,
+      closeImage: require('~/assets/img/close.svg'),
+      isSubmit: false,
+      isWrong: false,
+      wrongText: '',
       model: {
-        email: '',
-        password: '',
+        username: '0978286920',
+        password: '1',
       },
     }
   },
   methods: {
+    removeText(field) {
+      this.model[field] = ''
+    },
+    removeWrong() {
+      this.isWrong = false
+    },
     async login() {
-      if (!this.valid) return
       try {
-        this.loading = true
-        await this.$auth.loginWith('local', { data: this.model })
-        this.$router.push({ name: 'index' })
+        this.isSubmit = true
+        const { data } = await this.$auth.loginWith('local', { data: this.model })
+        console.log(2)
+        if (data.success) {
+          const accessToken = data.data.user.accessToken.token
+          this.$auth.setStrategy('local')
+          this.$auth.strategy.token.set(accessToken)
+          this.$auth.setUser(data.data.user)
+          console.log(1)
+          this.$router.push('/')
+          return true
+        }
+        this.isWrong = true
+        this.wrongText = data.error.message
       } catch (e) {
-        this.$error('Email or password incorrect')
+        this.isWrong = true
+        this.wrongText = e.message
+        console.log(e)
       } finally {
         this.loading = false
+        this.isSubmit = false
       }
     },
   },
 }
 </script>
+<style lang="scss" scoped>
+.login {
+  margin-top: 124px;
+  padding: 0 28px;
+  font-family: $fontNormal;
+
+  > .title {
+    font-family: $fontBold;
+    font-style: normal;
+    font-weight: bold;
+    font-size: 24px;
+    line-height: 32px;
+    color: $colorText;
+  }
+  > .form > .form-control {
+    border: 1px solid #e6e8e9;
+    margin-top: 16px;
+    height: 56px;
+    border-radius: 8px;
+    position: relative;
+    padding: 0 16px;
+    font-family: iCielHelveticaNowText, sans-serif;
+    &::before {
+      position: absolute;
+      content: '';
+      left: 0;
+      bottom: -1px;
+      width: 100%;
+      height: 2px;
+      transform: scaleX(0);
+      transform-origin: center;
+      transition: 0.5s;
+    }
+
+    &:focus-within::before {
+      transform: scaleX(1);
+    }
+
+    > .input {
+      padding: 0.5rem 0;
+      background: none;
+      border: none;
+      width: 100%;
+      box-sizing: border-box;
+      outline: none;
+      margin-top: 22px;
+      color: #25282b;
+      &:focus,
+      &:not(:placeholder-shown) {
+        ~ label {
+          transform: translateY(-110%);
+          font-size: 12px;
+          top: 30px;
+          color: #a0a4a8;
+        }
+        ~ .icon {
+          display: block;
+        }
+      }
+    }
+    > .label {
+      font-style: normal;
+      font-weight: normal;
+      font-size: 14px;
+      line-height: 21px;
+      color: #adadad;
+      position: absolute;
+      top: 18px;
+      left: 16px;
+      transition: 0.3s;
+      transform-origin: left;
+      z-index: -1;
+    }
+  }
+  > .form > .form-control > .icon {
+    position: absolute;
+    top: 19.5px;
+    right: 19.5px;
+    display: none;
+  }
+  > .form > .btn.-submit {
+    display: block;
+    height: 52px;
+    width: 100%;
+    text-align: center;
+    font-family: iCielHelveticaNowText, sans-serif;
+    background: $colorBrand;
+    font-weight: bold;
+    font-size: 18px;
+    line-height: 26px;
+    color: #fff;
+    border-radius: 8px;
+    margin-top: 40px;
+    border: none;
+  }
+  > .form > .wrong {
+    margin-top: 20px;
+    color: $colorCancel;
+    font-size: 14px;
+  }
+}
+</style>
