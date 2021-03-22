@@ -5,18 +5,18 @@
       <div class="body">
         <div class="cell">
           <span class="label">Mã giao dịch</span>
-          <span class="value">TK012301230</span>
+          <span class="value">{{ detail.eid }}</span>
         </div>
         <div class="cell">
           <span class="label">Số tiền thu hộ</span>
           <span class="value -amount">
-            <span>50.000</span>
-            <span>EUR</span>
+            <span>{{ detail.amount }}</span>
+            <span>{{ detail.currency }}</span>
           </span>
         </div>
         <div class="cell">
           <span class="label">Trạng thái</span>
-          <span class="value -created"> Mới</span>
+          <span class="value -status" :class="status[detail.status].class"> {{ status[detail.status].label }}</span>
         </div>
         <div class="line"></div>
         <p class="customer">Thông tin khách hàng</p>
@@ -24,20 +24,18 @@
           <div class="avatar">
             <img :src="require('~/assets/img/user.png')" alt="user" />
           </div>
-          <span class="name">Lương văn b</span>
-          <span class="icon">
-            <img :src="callImg" alt="call" />
-          </span>
+          <span class="name">{{ detail.user.name }}</span>
+          <a :href="`tel:` + detail.user.phone" class="icon"> <img :src="callImg" alt="call" /></a>
         </div>
         <div class="cell -customer">
-          <img class="icon" :src="callOImg" alt="call-o" />
+          <img :src="callOImg" alt="call-o" class="icon" />
           <span class="label -phone">Số điện thoại</span>
-          <span class="value">+3809635644868</span>
+          <span class="value">{{ detail.user.phone }}</span>
         </div>
         <div class="cell -customer">
           <img class="icon" :src="homeImg" alt="home" />
           <span class="label -address">Địa chỉ</span>
-          <span class="value">+3809635644868</span>
+          <span class="value">{{ detail.user.address }}</span>
         </div>
       </div>
     </div>
@@ -45,11 +43,35 @@
 </template>
 <script>
 export default {
+  props: {
+    detail: {
+      type: Object,
+      default: () => {},
+    },
+  },
   data() {
     return {
       callImg: require('~/assets/img/call.svg'),
       callOImg: require('~/assets/img/call-o.svg'),
       homeImg: require('~/assets/img/home.svg'),
+      status: {
+        PROCESSING: {
+          label: 'Mới',
+          class: '-processing',
+        },
+        RECEIVED: {
+          label: 'Đã thu tiền',
+          class: '-received',
+        },
+        CANCEL: {
+          label: 'Hủy',
+          class: '-cancel',
+        },
+        SUCCESS: {
+          label: 'Thành công',
+          class: '-success',
+        },
+      },
     }
   },
 }
@@ -117,11 +139,25 @@ export default {
     font-weight: 500;
     font-family: $fontMedium;
   }
-  > .value.-created {
-    color: $colorBrand;
+  > .value.-status {
     padding: 6px 12px;
-    background: #ccefdc7a;
     border-radius: 4px;
+  }
+  > .value.-status.-processing {
+    color: #ff9500;
+    background: #ffd5993b;
+  }
+  > .value.-status.-received {
+    color: #2f80ed;
+    background: #2f80ed3b;
+  }
+  > .value.-status.-cancel {
+    color: #f46666;
+    background: #f466663b;
+  }
+  > .value.-status.-success {
+    color: #00b14f;
+    background: #00b14f3b;
   }
   &.-customer {
     justify-content: unset;

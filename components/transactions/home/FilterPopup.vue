@@ -23,9 +23,9 @@
       </ul>
       <p class="title">Theo Thời gian</p>
       <transition name="fade">
-        <div v-if="models.minDate && models.maxDate" class="range">
-          <span class="date"><b>Từ </b>{{ models.minDate }}</span>
-          <span class="date"><b>Đến </b>{{ models.maxDate }}</span>
+        <div v-if="models.startDate && models.endDate" class="range">
+          <span class="date"><b>Từ </b>{{ models.startDate }}</span>
+          <span class="date"><b>Đến </b>{{ models.endDate }}</span>
         </div>
       </transition>
       <VueDatePicker v-model="currentDate" :max-date="date" no-header inline range fullscreen-mobile :color="color" />
@@ -41,6 +41,12 @@ import { VueDatePicker } from '@mathieustan/vue-datepicker'
 import '@mathieustan/vue-datepicker/dist/vue-datepicker.min.css'
 import moment from 'moment'
 import { states } from '~/constants'
+const FILTER_DEFAULT = {
+  eid: null,
+  status: 'PROCESSING',
+  startDate: '',
+  endDate: '',
+}
 export default {
   components: {
     VueDatePicker,
@@ -60,43 +66,46 @@ export default {
       models: {
         status: '',
       },
+      isReset: false,
       states,
     }
   },
   watch: {
     'currentDate.start'(newVal) {
-      this.models.minDate = moment(newVal).format('DD/MM/YYYY')
+      this.models.startDate = this.formatDate(newVal)
     },
     'currentDate.end'(newVal) {
-      this.models.maxDate = moment(newVal).format('DD/MM/YYYY')
+      this.models.endDate = this.formatDate(newVal)
     },
   },
   created() {
+    this.isReset = false
     this.models.status = this.filters.status
-    this.models.minDate = this.filters.startDate
-    this.models.maxDate = this.filters.endDate
-    if (this.filters.startDate && this.filters.endDate) {
-      this.currentDate.start = moment(this.filters.startDate).format('YYYY-MM-DD')
-      this.currentDate.end = moment(this.filters.endDate).format('YYYY-MM-DD')
+    if (!this.filters.startDate && !this.filters.endDate) {
+      return
     }
-    console.log(this.currentDate)
+    this.models.startDate = this.formatDate(this.filters.startDate, 'MM/DD/YYYY')
+    this.models.endDate = this.formatDate(this.filters.startDate, 'MM/DD/YYYY')
+    this.currentDate.start = this.formatDate(this.filters.startDate, 'YYYY-DD-MM')
+    this.currentDate.end = this.formatDate(this.filters.endDate, 'YYYY-DD-MM')
   },
   methods: {
-    formatDate(date) {
-      if (!date) return date
-      const format = date.split('-')
-      return format[2] + '/' + format[1] + '/' + format[0]
+    formatDate(date, pattern = 'DD/MM/YYYY') {
+      return moment(date).format(pattern)
     },
     reset() {
-      this.models = {}
+      this.models = FILTER_DEFAULT
       this.currentDate = new Date()
+      this.models.apply = false
+      this.isReset = true
+      this.$emit('input', this.models)
     },
     addFilter(status) {
       this.models.status = status
     },
     apply() {
-      this.models.startDate = this.models.minDate
-      this.models.endDate = this.models.maxDate
+      if (!this.isReset) this.models.apply = true
+
       this.models = { ...this.filters, ...this.models }
       this.$emit('input', this.models)
       this.$emit('close')

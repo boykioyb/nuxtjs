@@ -2,19 +2,44 @@
   <div class="search">
     <div class="form">
       <img class="icon" :src="searchImg" alt="search" />
-      <input type="text" placeholder="Nhập mã giao dịch cần tìm" class="input" />
+      <input
+        v-model="eid"
+        type="text"
+        placeholder="Nhập mã giao dịch cần tìm"
+        class="input"
+        @keyup.enter.prevent="onEnter"
+      />
     </div>
-    <img class="icon" :src="filterImg" alt="filter" @click="$emit('openFilter')" />
+    <img class="icon" :src="filters.apply ? filterApplyImg : filterImg" alt="filter" @click="$emit('openFilter')" />
   </div>
 </template>
 <script>
 export default {
+  props: {
+    filters: {
+      type: Object,
+      default: () => {},
+    },
+  },
   data() {
     return {
       searchImg: require('~/assets/img/search.svg'),
       filterImg: require('~/assets/img/filter.svg'),
       filterApplyImg: require('~/assets/img/filter-a.svg'),
+      models: {},
+      eid: null,
     }
+  },
+  methods: {
+    onEnter() {
+      this.models = {
+        ...this.filters,
+        ...{
+          eid: this.eid,
+        },
+      }
+      this.$emit('input', this.models)
+    },
   },
 }
 </script>

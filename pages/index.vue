@@ -4,51 +4,59 @@
       <h1 class="title">Danh sách giao dịch</h1>
       <img class="icon" :src="logoutImg" alt="" @click="toggleLogoutPopup" />
     </Header>
-    <Search @openFilter="toggleOpenFilter" />
-    <Status v-model="filters.status" :selected="filters.status" />
-    <p class="count">Số lượng giao dịch: 5</p>
-    <List :transactions="transactions.trans" />
+    <Search v-model="filters" :filters="filters" @openFilter="toggleOpenFilter" />
+    <Status v-model="filters" :filters="filters" />
+    <p class="count">
+      Số lượng giao dịch: {{ transactions.meta && transactions.meta.total ? transactions.meta.total : 0 }}
+    </p>
+    <Loading v-if="isLoading" />
+    <List :transactions="transactions" :filters="filters" />
     <FilterPopup v-if="isOpenFilter" v-model="filters" :filters="filters" @close="toggleOpenFilter" />
     <LogoutPopup v-if="isLogout" @cancel="toggleLogoutPopup" />
   </div>
 </template>
 <script>
-import { get, dispatch } from 'vuex-pathify'
+import { get, sync, dispatch } from 'vuex-pathify'
 import Header from '~/components/layout/header'
 import LogoutPopup from '~/components/layout/header/LogoutPopup'
 import Search from '~/components/transactions/home/Search'
 import Status from '~/components/transactions/home/Status'
 import List from '~/components/transactions/home/List'
 import FilterPopup from '~/components/transactions/home/FilterPopup'
-
+import Loading from '~/components/layout/common/Loading'
 export default {
   name: 'Transaction',
-  components: { Header, Search, Status, List, FilterPopup, LogoutPopup },
+  components: { Header, Search, Status, List, FilterPopup, LogoutPopup, Loading },
   data() {
     return {
       logoutImg: require('~/assets/img/logout.svg'),
       isOpenFilter: false,
       isOpenBg: false,
       isLogout: false,
-      titles: {
-        CREATED: 'Giao dịch mới',
-      },
-      filters: {
-        status: 'CREATED',
-        startDate: '',
-        endDate: '',
-      },
+      isLoading: false,
     }
   },
   computed: {
     transactions: get('transaction/transactions'),
+    filters: sync('transaction/filters'),
+  },
+  watch: {
+    async filters() {
+      await this.getTransList()
+    },
   },
   async mounted() {
-    await dispatch('transaction/getList', {
-      status: this.status,
-    })
+    await this.getTransList()
   },
   methods: {
+    async getTransList() {
+      this.isLoading = true
+      await dispatch('transaction/getList', this.filters).catch(() => {
+        this.isLoading = false
+        this.$toasted.error('Có lỗi xảy ra.')
+      })
+      this.isLoading = false
+    },
     toggleLogoutPopup() {
       this.isOpenBg = !this.isOpenBg
       this.isLogout = !this.isLogout

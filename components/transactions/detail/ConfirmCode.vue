@@ -3,13 +3,7 @@
     <h2 class="title">Mã xác nhận</h2>
     <div class="box">
       <div class="codes">
-        <span class="code">1</span>
-        <span class="code">2</span>
-        <span class="code">A</span>
-        <span class="code">B</span>
-        <span class="code">2</span>
-        <span class="code">1</span>
-        <span class="code">3</span>
+        <span v-for="code in confirmCode" :key="Math.random(code)" class="code">{{ code }}</span>
       </div>
     </div>
     <p class="note">Vui lòng cung cấp mã xác nhận cho khách hàng trước khi thu tiền</p>
@@ -18,6 +12,20 @@
 <script>
 export default {
   name: 'ConfirmCode',
+  props: {
+    detail: {
+      type: Object,
+      default: () => {},
+    },
+  },
+  data() {
+    return {
+      confirmCode: [],
+    }
+  },
+  created() {
+    this.confirmCode = this.detail.confirmCode.split('')
+  },
 }
 </script>
 <style lang="scss" scoped>
@@ -43,6 +51,7 @@ export default {
     font-family: $fontBold;
     font-size: 28px;
     line-height: 36px;
+    letter-spacing: 0.2em;
   }
   > .note {
     color: #ff9500;

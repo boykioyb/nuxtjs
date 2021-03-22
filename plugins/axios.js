@@ -22,7 +22,6 @@ export default function ({ $axios, redirect, $config }) {
     }
   })
   $axios.interceptors.response.use((response) => {
-    console.log(response.data && !response.data.success && response.data.error && response.data.error.code === 1200)
     if (response.data && !response.data.success && response.data.error && response.data.error.code === 1200) {
       redirect('/auth/logout')
       return false

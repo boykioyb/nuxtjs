@@ -2,35 +2,50 @@
   <div class="cancel-popup">
     <div class="head">
       <h3 class="title">Lý do hủy</h3>
-      <img :src="closeImg" alt="close" @click="$emit('close')" />
+      <img :src="closeImg" alt="close" @click="close" />
     </div>
     <div class="body">
       <label class="cell">
         <span class="note">Không liên lạc được với khách hàng</span>
-        <input type="radio" class="check" name="radAnswer" />
+        <input
+          v-model="noteCancel"
+          type="radio"
+          class="check"
+          name="radAnswer"
+          value="Không liên lạc được với khách hàng"
+        />
         <span class="checkmark"></span>
       </label>
       <label class="cell">
         <span class="note">Khách hàng từ chối đưa tiền</span>
-        <input type="radio" class="check" name="radAnswer" />
+        <input v-model="noteCancel" type="radio" class="check" name="radAnswer" value="Khách hàng từ chối đưa tiền" />
         <span class="checkmark"></span>
       </label>
       <label class="cell">
         <span class="note">Khách hàng thao tác nhầm</span>
-        <input type="radio" class="check" name="radAnswer" />
+        <input v-model="noteCancel" type="radio" class="check" name="radAnswer" value="Khách hàng thao tác nhầm" />
         <span class="checkmark"></span>
       </label>
       <label class="cell">
         <span class="note">Khách hàng yêu cầu hủy</span>
-        <input type="radio" class="check" name="radAnswer" />
+        <input v-model="noteCancel" type="radio" class="check" name="radAnswer" value="Khách hàng yêu cầu hủy" />
         <span class="checkmark"></span>
       </label>
       <label class="cell">
         <span class="note">Lý do khác</span>
-        <input type="radio" class="check" name="radAnswer" />
+        <input v-model="noteCancel" type="radio" class="check" name="radAnswer" value="Lý do khác" />
         <span class="checkmark"></span>
       </label>
-      <button class="btn -confirm -active" @click="$emit('confirm')">Xác nhận</button>
+      <button
+        class="btn -confirm"
+        :class="{
+          '-active': isActive,
+        }"
+        :disabled="!isActive"
+        @click="$emit('confirm', noteCancel)"
+      >
+        Xác nhận
+      </button>
     </div>
   </div>
 </template>
@@ -39,7 +54,21 @@ export default {
   data() {
     return {
       closeImg: require('~/assets/img/close-o.svg'),
+      noteCancel: '',
+      isActive: false,
     }
+  },
+  watch: {
+    noteCancel(note) {
+      if (note.length) this.isActive = true
+    },
+  },
+  methods: {
+    close() {
+      this.$emit('close')
+      this.noteCancel = ''
+      this.isActive = false
+    },
   },
 }
 </script>

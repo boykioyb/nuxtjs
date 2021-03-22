@@ -5,7 +5,7 @@
       :key="status"
       class="status"
       :class="{
-        '-active': status === selected,
+        '-active': status === filters.status,
       }"
       @click="addFilter(status)"
     >
@@ -18,19 +18,21 @@ import { states } from '~/constants'
 export default {
   name: 'Status',
   props: {
-    selected: {
-      type: String,
-      default: 'CREATED',
+    filters: {
+      type: Object,
+      default: () => {},
     },
   },
   data() {
     return {
+      models: {},
       states,
     }
   },
   methods: {
     addFilter(status) {
-      this.$emit('input', status)
+      this.models = { ...this.filters, ...{ status } }
+      this.$emit('input', this.models)
     },
   },
 }

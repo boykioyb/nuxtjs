@@ -26,7 +26,7 @@ export default {
     jit: true,
   },
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
-  plugins: ['~/plugins/models', '~/plugins/axios'],
+  plugins: ['~/plugins/models', '~/plugins/axios', '~/plugins/common'],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
   components: true,

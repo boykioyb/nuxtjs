@@ -20,7 +20,10 @@
     "node-sass": "^4.14.1",
     "nuxt": "^2.14.12",
     "sass-loader": "10.1.1",
-    "vuex-pathify": "^1.4.5"
+    "vue-infinite-scroll": "^2.0.2",
+    "vue-toasted": "^1.1.28",
+    "vuex-pathify": "^1.4.5",
+    "vuex-persistedstate": "^4.0.0-beta.3"
   },
   "devDependencies": {
     "@nuxtjs/dotenv": "^1.4.1",

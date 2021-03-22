@@ -49,7 +49,7 @@ export default {
       isWrong: false,
       wrongText: '',
       model: {
-        username: '0978286920',
+        username: '0979008320',
         password: '1',
       },
     }
@@ -65,13 +65,11 @@ export default {
       try {
         this.isSubmit = true
         const { data } = await this.$auth.loginWith('local', { data: this.model })
-        console.log(2)
         if (data.success) {
           const accessToken = data.data.user.accessToken.token
           this.$auth.setStrategy('local')
           this.$auth.strategy.token.set(accessToken)
           this.$auth.setUser(data.data.user)
-          console.log(1)
           this.$router.push('/')
           return true
         }
@@ -80,7 +78,6 @@ export default {
       } catch (e) {
         this.isWrong = true
         this.wrongText = e.message
-        console.log(e)
       } finally {
         this.loading = false
         this.isSubmit = false

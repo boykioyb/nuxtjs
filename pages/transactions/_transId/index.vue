@@ -6,16 +6,16 @@
     }"
   >
     <Header>
-      <img class="icon" :src="backImg" alt="" />
+      <img class="icon" :src="backImg" alt="" @click="$router.back()" />
       <h1 class="title">Chi tiết giao dịch</h1>
     </Header>
-    <div class="detail">
-      <Info />
-      <ConfirmCode />
+    <div v-if="detail" class="detail">
+      <Info :detail="detail" />
+      <ConfirmCode v-if="detail.confirmCode" :detail="detail" />
     </div>
     <div class="buttons">
-      <button v-if="isShowHome" class="btn -home">Trang chủ</button>
-      <button v-if="!isShowHome" class="btn -confirm">Xác nhận</button>
+      <button v-if="isShowHome" class="btn -home" @click="$router.push('/')">Trang chủ</button>
+      <button v-if="!isShowHome" class="btn -confirm" @click="confirmReceived">Xác nhận</button>
       <button v-if="!isShowHome" class="btn -cancel" @click="toggleCancelPopup">Hủy giao dịch</button>
     </div>
     <CancelPopup
@@ -27,6 +27,8 @@
   </div>
 </template>
 <script>
+import { dispatch, get } from 'vuex-pathify'
+
 import Header from '~/components/layout/header'
 import Info from '~/components/transactions/detail/Info'
 import ConfirmCode from '~/components/transactions/detail/ConfirmCode'
@@ -40,12 +42,47 @@ export default {
       isShowHome: false,
     }
   },
+  computed: {
+    transactions: get('transaction/transactions'),
+    detail() {
+      return this.transactions.trans.find(({ eid }) => eid === this.transId)
+    },
+    transId() {
+      return this.$route.params.transId
+    },
+  },
+  created() {
+    if (this.detail.status !== 'PROCESSING') {
+      this.isShowHome = true
+    }
+  },
+  mounted() {
+    if (!this.detail) this.$nuxt.error({ statusCode: 404, message: '' })
+  },
   methods: {
     toggleCancelPopup() {
       this.isOpenCancelPopup = !this.isOpenCancelPopup
     },
-    confirmCancel() {
-      this.isShowHome = true
+    async confirmReceived() {
+      const confirmed = await dispatch('transaction/confirmReceived', {
+        tranId: this.detail.id,
+      }).catch(() => this.$toasted.error('Có lỗi xảy ra.'))
+      if (confirmed.success) this.isShowHome = true
+      if (!confirmed.success) {
+        this.$toasted.error(confirmed.error.message)
+      }
+    },
+    async confirmCancel(note) {
+      const canceled = await dispatch('transaction/cancel', {
+        note,
+        tranId: this.detail.id,
+      }).catch(() => {
+        this.$toasted.error('Có lỗi xảy ra.')
+      })
+      if (canceled.success) this.isShowHome = true
+      if (!canceled.success) {
+        this.$toasted.error(canceled.error.message)
+      }
       this.toggleCancelPopup()
     },
   },
@@ -73,6 +110,9 @@ export default {
     display: flex;
     align-items: center;
     justify-content: space-between;
+  }
+  > .header > .icon {
+    cursor: pointer;
   }
   > .header > .title {
     flex-grow: 3;
